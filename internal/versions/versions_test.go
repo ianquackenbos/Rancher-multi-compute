@@ -64,21 +64,21 @@ func TestFileResolver_Resolve_NonExistentChannel(t *testing.T) {
 func TestFileResolver_Resolve_InvalidYAML(t *testing.T) {
 	// Create a temporary directory structure
 	tempDir := t.TempDir()
-	
+
 	// Create stable channel directory
 	stableDir := filepath.Join(tempDir, "stable")
 	err := os.MkdirAll(stableDir, 0755)
 	require.NoError(t, err)
-	
+
 	// Create invalid VERSION.yaml file
 	versionFile := filepath.Join(stableDir, "VERSION.yaml")
 	versionContent := `invalid: yaml: content: [`
 	err = os.WriteFile(versionFile, []byte(versionContent), 0644)
 	require.NoError(t, err)
-	
+
 	// Create resolver
 	resolver := NewFileResolver(tempDir)
-	
+
 	// Test resolve
 	ctx := context.Background()
 	_, err = resolver.Resolve(ctx, "stable")
@@ -87,7 +87,7 @@ func TestFileResolver_Resolve_InvalidYAML(t *testing.T) {
 
 func TestLoadSources(t *testing.T) {
 	ctx := context.Background()
-	
+
 	// Test with valid YAML data
 	configMapData := map[string]string{
 		"nvidia": `
@@ -101,13 +101,13 @@ chart: "rocm-device-plugin"
 namespace: "rocm-system"
 `,
 	}
-	
+
 	sources, err := LoadSources(ctx, configMapData)
 	require.NoError(t, err)
 	assert.NotNil(t, sources)
 	assert.Contains(t, sources, "nvidia")
 	assert.Contains(t, sources, "amd")
-	
+
 	// Verify nvidia source structure
 	nvidiaSource := sources["nvidia"].(map[string]interface{})
 	assert.Equal(t, "https://nvidia.github.io/helm-charts", nvidiaSource["repo"])
@@ -117,12 +117,12 @@ namespace: "rocm-system"
 
 func TestLoadSources_InvalidYAML(t *testing.T) {
 	ctx := context.Background()
-	
+
 	// Test with invalid YAML data
 	configMapData := map[string]string{
 		"nvidia": `invalid: yaml: content: [`,
 	}
-	
+
 	_, err := LoadSources(ctx, configMapData)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to unmarshal source for vendor nvidia")
@@ -130,10 +130,10 @@ func TestLoadSources_InvalidYAML(t *testing.T) {
 
 func TestLoadSources_EmptyData(t *testing.T) {
 	ctx := context.Background()
-	
+
 	// Test with empty data
 	configMapData := map[string]string{}
-	
+
 	sources, err := LoadSources(ctx, configMapData)
 	require.NoError(t, err)
 	assert.NotNil(t, sources)

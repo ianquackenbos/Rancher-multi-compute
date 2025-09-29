@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	multisuseiov1alpha1 "github.com/suse/rancher-multi-compute/api/multi.suse.io/v1alpha1"
 )
@@ -95,6 +96,12 @@ func (te *TestEnv) GetScheme() *runtime.Scheme {
 func (te *TestEnv) GetManager() ctrl.Manager {
 	mgr, err := ctrl.NewManager(te.cfg, ctrl.Options{
 		Scheme: scheme.Scheme,
+		// Disable metrics server to avoid port conflicts in parallel tests
+		Metrics: metricsserver.Options{
+			BindAddress: "0",
+		},
+		// Disable health probe server to avoid port conflicts
+		HealthProbeBindAddress: "0",
 	})
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return mgr

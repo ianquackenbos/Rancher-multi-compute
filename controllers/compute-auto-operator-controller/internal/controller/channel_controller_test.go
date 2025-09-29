@@ -91,15 +91,22 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 		// Use a unique controller name to avoid conflicts
 		Expect(reconciler.SetupWithManager(mgr)).To(Succeed())
 
+		// Start manager in background with timeout
 		go func() {
 			defer GinkgoRecover()
-			err := mgr.Start(ctx)
-			Expect(err).NotTo(HaveOccurred())
+			startCtx, startCancel := context.WithTimeout(ctx, 5*time.Second)
+			defer startCancel()
+			err := mgr.Start(startCtx)
+			if err != nil && err != context.Canceled && err != context.DeadlineExceeded {
+				Expect(err).NotTo(HaveOccurred())
+			}
 		}()
 	})
 
 	AfterEach(func() {
 		cancel()
+		// Give manager time to stop gracefully
+		time.Sleep(100 * time.Millisecond)
 		testEnv.Stop()
 	})
 
@@ -126,7 +133,7 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 				err := testEnv.GetClient().Get(ctx,
 					types.NamespacedName{Name: "rmc-nvidia-stack", Namespace: "cattle-fleet-system"}, bundle)
 				return err == nil
-			}, 10*time.Second, 1*time.Second).Should(BeTrue())
+			}, 5*time.Second, 500*time.Millisecond).Should(BeTrue())
 
 			// Verify Bundle was created with correct labels
 			bundle := &unstructured.Unstructured{}
@@ -143,7 +150,7 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 				fetchedChannel := &multisuseiov1alpha1.Channel{}
 				_ = testEnv.GetClient().Get(ctx, types.NamespacedName{Name: "nvidia-stable"}, fetchedChannel)
 				return fetchedChannel.Status.Phase
-			}, 10*time.Second, 1*time.Second).Should(Equal("RollingOut"))
+			}, 5*time.Second, 500*time.Millisecond).Should(Equal("RollingOut"))
 		})
 
 		It("should update Channel status to Completed when BundleDeployment is Ready", func() {
@@ -168,7 +175,7 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 				err := testEnv.GetClient().Get(ctx,
 					types.NamespacedName{Name: "rmc-nvidia-stack", Namespace: "cattle-fleet-system"}, bundle)
 				return err == nil
-			}, 10*time.Second, 1*time.Second).Should(BeTrue())
+			}, 5*time.Second, 500*time.Millisecond).Should(BeTrue())
 
 			// Create a BundleDeployment with Ready status
 			bundleDeployment := &unstructured.Unstructured{}
@@ -213,7 +220,7 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 				err := testEnv.GetClient().Get(ctx,
 					types.NamespacedName{Name: "rmc-nvidia-stack", Namespace: "cattle-fleet-system"}, bundle)
 				return err == nil
-			}, 10*time.Second, 1*time.Second).Should(BeTrue())
+			}, 5*time.Second, 500*time.Millisecond).Should(BeTrue())
 
 			// Create a BundleDeployment with Failed status
 			bundleDeployment := &unstructured.Unstructured{}
@@ -264,7 +271,7 @@ var _ = Describe("Channel Controller (EnvTest)", func() {
 					}
 				}
 				return false
-			}, 10*time.Second, 1*time.Second).Should(BeTrue())
+			}, 5*time.Second, 500*time.Millisecond).Should(BeTrue())
 		})
 	})
 })

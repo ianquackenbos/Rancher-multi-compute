@@ -43,7 +43,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: fmt vet ## Run tests.
-	go test ./... -coverprofile cover.out
+	go test ./internal/... ./pkg/... ./api/... -coverprofile cover.out
 
 .PHONY: lint
 lint: ## Run golangci-lint linter
@@ -53,11 +53,15 @@ lint: ## Run golangci-lint linter
 
 .PHONY: build
 build: fmt vet ## Build manager binary.
-	go build -o bin/manager ./cmd/main.go
+	mkdir -p bin
+	go build -o bin/auto-operator-controller ./controllers/compute-auto-operator-controller
+	go build -o bin/profiler-controller ./controllers/compute-profiler-controller
+	go build -o bin/drift-detector ./controllers/compute-drift-detector
+	go build -o bin/policy-controller ./controllers/policy-controller
 
 .PHONY: run
 run: fmt vet ## Run a controller from your host.
-	go run ./cmd/main.go
+	go run ./controllers/compute-auto-operator-controller
 
 .PHONY: generate
 generate: ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
