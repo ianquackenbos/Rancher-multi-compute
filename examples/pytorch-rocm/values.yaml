@@ -1,0 +1,50 @@
+replicaCount: 1
+
+image:
+  repository: rocm/pytorch
+  tag: "rocm5.7_ubuntu22.04_py3.11_pytorch_2.1.0"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: pytorch-rocm.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    amd.com/gpu: 1
+  requests:
+    amd.com/gpu: 1
+
+nodeSelector:
+  compute.multi.suse.io/vendor: amd
+
+tolerations: []
+
+affinity: {}
+
+# PyTorch specific configuration
+pytorch:
+  distributed: false
+  backend: "nccl"
+  worldSize: 1
+  rank: 0
+
+# ROCm specific configuration
+rocm:
+  visibleDevices: "all"
+  debugLevel: 0

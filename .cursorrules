@@ -1,0 +1,85 @@
+# Rancher Multi-Compute Cursor Rules
+
+project:
+  name: rancher-multi-compute
+  description: >
+    Rancher extension and controllers to manage heterogeneous compute fleets
+    (GPU/CPU operators) across multi-cluster environments using Fleet.
+  language: go
+  style: kubebuilder/operator-sdk
+
+rules:
+  - Always follow Go module path: github.com/suse/rancher-multi-compute
+  - Use package structure:
+      api/multi.suse.io/v1alpha1   → CRDs
+      controllers/...              → Reconcilers
+      internal/...                 → helpers (resolver, fleetutil, vendors)
+      ui/rancher-extension/...     → Rancher UI extension
+      hack/...                     → scripts, e2e tests
+  - Do not invent new package paths. Use these only.
+
+crds:
+  - Channel
+  - MultiComputeConfig
+  - Status fields must include phase, observedVersion, conditions.
+
+controllers:
+  - compute-profiler-controller:
+      Purpose: Detect GPU/node profiles and add labels.
+  - compute-auto-operator-controller:
+      Purpose: Reconcile Channel CRs into Fleet Bundles.
+      Key behaviors:
+        - Resolve versions from fleet/overlays/*/VERSION.yaml
+        - Create/update Bundle in cattle-fleet-system namespace
+        - Label Bundles with multi.suse.io/vendor, channel, owner
+        - List BundleDeployments by labels to compute Channel status
+        - Update Channel.status.phase: Pending, Progressing, Succeeded, Failed
+  - compute-drift-detector:
+      Purpose: Detect drift between declared Channel and actual deployments.
+  - policy-controller:
+      Purpose: Apply org-wide compute policies.
+
+fleet:
+  - Never try to "discover" Fleet types. Use one of two approaches only:
+    1. Preferred MVP: Unstructured GVKs
+       - Group: fleet.cattle.io
+       - Version: v1alpha1
+       - Kinds: Bundle, BundleDeployment
+       - Namespace for Bundles: cattle-fleet-system
+    2. If absolutely required: import
+       github.com/rancher/fleet/pkg/apis/fleet.cattle.io/v1alpha1 as fleetv1alpha1
+  - Labels to apply:
+      app.kubernetes.io/part-of = rancher-multi-compute
+      multi.suse.io/vendor
+      multi.suse.io/channel
+      multi.suse.io/owner
+
+testing:
+  - Use envtest (controller-runtime) for CRD/controller tests.
+  - Avoid fake client for cluster-scoped resources (like Channel).
+  - Unit test coverage goal ≥ 80%.
+  - e2e tests use hack/e2e-kind.sh and KIND clusters.
+
+lint:
+  - golangci-lint must run clean.
+  - No unused imports or commented-out code.
+  - Always check errors (errcheck).
+
+ui:
+  - Extension code lives under ui/rancher-extension.
+  - Use mock providers for demo data; switchable to live provider.
+  - Show channels, vendors, rollout status, drift visually.
+
+docs:
+  - docs/operations.md → how to run controllers, tests, e2e
+  - docs/support-matrix.md → vendor/operator version matrix
+  - README.md → project overview
+
+forbidden:
+  - Do not generate or scaffold new webhooks unless explicitly needed.
+  - Do not import unpinned versions of fleet or wrangler.
+  - Do not loop on "checking vendor/go.mod/source" — imports are fixed.
+  - Do not use fake client for cluster-scoped resources.
+
+ci:
+  - GitHub Actions: lint, test, coverage gate (≥80%), build.

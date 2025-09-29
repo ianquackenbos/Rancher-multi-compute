@@ -1,0 +1,32 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: limit-gpu-per-pod
+  annotations:
+    policies.kyverno.io/title: Limit GPU resources per pod
+    policies.kyverno.io/category: Multi-Tenancy
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Limits the number of GPU resources that can be requested by a single pod.
+      This helps prevent resource exhaustion and ensures fair allocation.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: limit-gpu-resources
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "Pod cannot request more than 4 GPU resources"
+      pattern:
+        spec:
+          containers:
+          - resources:
+              requests:
+                nvidia.com/gpu: "<=4"
+              limits:
+                nvidia.com/gpu: "<=4"

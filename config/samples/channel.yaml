@@ -1,0 +1,10 @@
+apiVersion: multi.suse.io/v1alpha1
+kind: Channel
+metadata:
+  name: nvidia-stable
+spec:
+  vendor: nvidia
+  channel: stable
+  clusterSelector:
+    matchLabels:
+      kubernetes.io/os: linux

@@ -1,0 +1,18 @@
+apiVersion: v2
+name: vllm-nvidia
+description: A Helm chart for vLLM inference with NVIDIA GPUs
+type: application
+version: 0.1.0
+appVersion: "0.2.7"
+keywords:
+  - vllm
+  - nvidia
+  - gpu
+  - inference
+  - llm
+home: https://github.com/vllm-project/vllm
+sources:
+  - https://github.com/vllm-project/vllm
+maintainers:
+  - name: Rancher Multi-Compute Team
+    email: multi-compute@suse.com

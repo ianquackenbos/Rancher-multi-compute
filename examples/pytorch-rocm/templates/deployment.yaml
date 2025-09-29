@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pytorch-rocm.fullname" . }}
+  labels:
+    {{- include "pytorch-rocm.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "pytorch-rocm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pytorch-rocm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      runtimeClassName: rocm
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: ROCM_VISIBLE_DEVICES
+              value: {{ .Values.rocm.visibleDevices | quote }}
+            - name: ROCM_DEBUG_LEVEL
+              value: {{ .Values.rocm.debugLevel | quote }}
+            - name: PYTORCH_DISTRIBUTED_BACKEND
+              value: {{ .Values.pytorch.backend | quote }}
+            - name: WORLD_SIZE
+              value: {{ .Values.pytorch.worldSize | quote }}
+            - name: RANK
+              value: {{ .Values.pytorch.rank | quote }}
+          command:
+            - python
+            - -c
+            - |
+              import torch
+              import torch.distributed as dist
+              print(f"PyTorch version: {torch.__version__}")
+              print(f"ROCm available: {torch.cuda.is_available()}")
+              if torch.cuda.is_available():
+                  print(f"GPU count: {torch.cuda.device_count()}")
+                  for i in range(torch.cuda.device_count()):
+                      print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+              # Keep container running
+              import time
+              while True:
+                  time.sleep(60)
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import torch; print('OK')"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - "import torch; print('OK')"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

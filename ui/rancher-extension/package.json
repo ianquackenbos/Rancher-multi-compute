@@ -1,0 +1,31 @@
+{
+  "name": "rancher-multi-compute-extension",
+  "version": "0.1.0",
+  "description": "Rancher UI extension for Multi-Compute management",
+  "main": "index.js",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@rancher/components": "^2.7.0",
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  },
+  "rancher": {
+    "extension": {
+      "name": "multi-compute",
+      "type": "ui",
+      "targets": [
+        "cluster-dashboard"
+      ]
+    }
+  }
+}

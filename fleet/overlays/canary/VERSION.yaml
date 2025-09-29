@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: version-config
+  namespace: cattle-fleet-system
+data:
+  nvidia:
+    operatorTag: "v25.0.0-rc1"
+    runtimeTag: "12.5.0-rc1"
+  amd:
+    operatorTag: "v1.1.0-rc1"
+    runtimeTag: "5.8.0-rc1"
+  intel:
+    operatorTag: "v0.5.0-rc1"
+    runtimeTag: "23.4.0-rc1"

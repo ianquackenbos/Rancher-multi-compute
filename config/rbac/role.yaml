@@ -1,0 +1,84 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - bundledeployments
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - fleet.cattle.io
+  resources:
+  - bundles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multi.suse.io
+  resources:
+  - channels
+  - multicomputeconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multi.suse.io
+  resources:
+  - channels/finalizers
+  - multicomputeconfigs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - multi.suse.io
+  resources:
+  - channels/status
+  - multicomputeconfigs/status
+  verbs:
+  - get
+  - patch
+  - update

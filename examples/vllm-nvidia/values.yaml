@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: vllm/vllm-openai
+  tag: "v0.2.7"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: vllm.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    nvidia.com/gpu: 1
+  requests:
+    nvidia.com/gpu: 1
+
+nodeSelector:
+  compute.multi.suse.io/vendor: nvidia
+
+tolerations: []
+
+affinity: {}
+
+# NVIDIA MIG profile (optional)
+mig:
+  enabled: false
+  profile: "1g.5gb"  # Example MIG profile
+
+# vLLM specific configuration
+vllm:
+  model: "microsoft/DialoGPT-medium"
+  tensorParallelSize: 1
+  gpuMemoryUtilization: 0.9
+  maxModelLen: 2048
+  trustRemoteCode: false

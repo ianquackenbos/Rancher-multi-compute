@@ -1,0 +1,23 @@
+apiVersion: multi.suse.io/v1alpha1
+kind: MultiComputeConfig
+metadata:
+  name: global-config
+spec:
+  policies:
+    enforceRuntimeClass: true
+    restrictGPUNamespaces: true
+    requireCosign: false
+    limitGPUsPerPod: 4
+  vendorSources:
+    nvidia:
+      repo: "https://nvidia.github.io/helm-charts"
+      chart: "gpu-operator"
+      namespace: "gpu-operator"
+    amd:
+      repo: "https://rocm.github.io/helm-charts"
+      chart: "rocm-device-plugin"
+      namespace: "rocm-device-plugin"
+    intel:
+      repo: "https://intel.github.io/helm-charts"
+      chart: "intel-gpu-plugin"
+      namespace: "intel-gpu-plugin"
