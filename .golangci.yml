@@ -1,0 +1,241 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - vendor
+    - bin
+    - ui/rancher-extension/node_modules
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*_generated\\.go$"
+
+output:
+  format: colored-line-number
+  print-issued-line: true
+  print-linter-name: true
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    settings:
+      printf:
+        funcs:
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
+          - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
+
+  gocyclo:
+    min-complexity: 15
+
+  maligned:
+    suggest-new: true
+
+  dupl:
+    threshold: 100
+
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+
+  misspell:
+    locale: US
+
+  lll:
+    line-length: 140
+
+  unused:
+    check-exported: false
+
+  unparam:
+    check-exported: false
+
+  nakedret:
+    max-func-lines: 30
+
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: false
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport # https://github.com/go-critic/go-critic/issues/845
+      - ifElseChain
+      - octalLiteral
+      - whyNoLint
+      - wrapperFunc
+
+  gocognit:
+    min-complexity: 20
+
+  nestif:
+    min-complexity: 5
+
+  noctx:
+    check-exported: false
+
+  exhaustive:
+    check-generated: false
+    default-signifies-exhaustive: false
+
+  gosec:
+    excludes:
+      - G204 # Subprocess launching should be audited
+      - G304 # File path provided as taint input
+
+  funlen:
+    lines: 100
+    statements: 50
+
+  gomnd:
+    settings:
+      mnd:
+        # don't include the "operation" and "assign"
+        checks: argument,case,condition,return
+
+  godox:
+    keywords:
+      - NOTE
+      - OPTIMIZE
+      - HACK
+
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: "github.com/sirupsen/logrus"
+            desc: "use klog instead of logrus"
+      test:
+        deny:
+          - pkg: "github.com/stretchr/testify"
+            desc: "use gomega instead of testify"
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exportloopref
+    - exhaustive
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - nestif
+    - noctx
+    - nolintlint
+    - prealloc
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - whitespace
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+        - dupl
+        - gosec
+    - path: controllers/.*/internal/controller/.*_test\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+        - dupl
+        - gosec
+    - path: api/.*/.*_test\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+        - dupl
+        - gosec
+    - path: internal/.*_test\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+        - dupl
+        - gosec
+    - path: pkg/.*_test\.go
+      linters:
+        - gomnd
+        - funlen
+        - goconst
+        - dupl
+        - gosec
+    - path: zz_generated\.go
+      linters:
+        - unused
+        - deadcode
+        - varcheck
+        - structcheck
+        - gosec
+        - goconst
+        - gomnd
+        - funlen
+        - dupl
+        - lll
+        - gocritic
+        - gocyclo
+        - nestif
+        - noctx
+        - nakedret
+        - prealloc
+        - unparam
+        - goprintffuncname
+        - gochecknoinits
+        - exportloopref
+        - dogsled
+        - bodyclose
+        - ineffassign
+        - misspell
+        - unconvert
+        - typecheck
+        - staticcheck
+        - stylecheck
+        - govet
+        - gofmt
+        - goimports
+        - whitespace
+        - nolintlint
+        - errcheck
+        - exhaustive
+        - depguard
+        - deadcode
+        - varcheck
+        - structcheck
+  max-issues-per-linter: 0
+  max-same-issues: 0
